@@ -133,8 +133,8 @@ void DFAGenerator::gen() {
     for (char C : Alphabet) {
       std::set<NFA *> t = genEClosure(delta(q, C));
       bool hasFinalState = hasFinal(t);
-    
-		if (hasFinalState || !t.empty()) {
+
+      if (hasFinalState || !t.empty()) {
         unsigned tID = getID(t);
         if (hasFinal(t))
           tID |= DFATable::Final;
