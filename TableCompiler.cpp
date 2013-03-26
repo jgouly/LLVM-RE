@@ -12,21 +12,6 @@ static llvm::Function *generateMatchFunction(llvm::Module *M) {
                                 M);
 }
 
-void TableCompiler::generateStateMatch(unsigned I) {
-  llvm::BasicBlock *S = StateBlocks[I];
-  std::map<char, unsigned> Row = D.States[I];
-  llvm::IRBuilder<> B(S);
-  llvm::Value *LIndex = B.CreateLoad(Index);
-  B.CreateStore(B.CreateAdd(LIndex, getInt(1)), Index);
-  llvm::SwitchInst *Switch =
-      B.CreateSwitch(getCurChar(B), StateBlocks.back(), Row.size());
-  for (auto A : Row) {
-    Switch->addCase(
-        llvm::ConstantInt::get(llvm::Type::getInt8Ty(S->getContext()), A.first),
-        StateBlocks[A.second]);
-  }
-}
-
 llvm::Value *TableCompiler::getCurChar(llvm::IRBuilder<> B) {
   llvm::Value *Idx = { B.CreateLoad(Index) };
   return B.CreateLoad(B.CreateGEP(String, Idx, "CurChar"));
@@ -56,10 +41,6 @@ void TableCompiler::genCharIndexFn() {
   }
 }
 
-unsigned TableCompiler::getCharIndex(char C) {
-  return std::distance(UniqueChars.begin(), UniqueChars.find(C));
-}
-
 void TableCompiler::genTransitionTable() {
   unsigned OuterSize = D.States.size();
   llvm::ArrayType *InnerAT =
@@ -81,7 +62,6 @@ void TableCompiler::genTransitionTable() {
   Table = new llvm::GlobalVariable(*M, OuterAT, true,
                                    llvm::GlobalVariable::InternalLinkage,
                                    OuterInit, "transitiontable");
-  Table->dump();
 }
 
 void TableCompiler::genFinalTable() {
@@ -118,11 +98,11 @@ void TableCompiler::gen() {
   B.CreateRet(B.getInt32(1));
   B.SetInsertPoint(Entry);
   Index = B.CreateAlloca(B.getInt32Ty(), nullptr, "Index");
-  B.CreateStore(getInt(0), Index);
+  B.CreateStore(B.getInt32(0), Index);
   IsMatch = B.CreateAlloca(B.getInt32Ty(), nullptr, "IsMatch");
-  B.CreateStore(getInt(0), IsMatch);
+  B.CreateStore(B.getInt32(0), IsMatch);
   CurState = B.CreateAlloca(B.getInt32Ty(), nullptr, "CurState");
-  B.CreateStore(getInt(0), CurState);
+  B.CreateStore(B.getInt32(0), CurState);
 
   B.SetInsertPoint(Entry);
 
@@ -158,5 +138,3 @@ void TableCompiler::gen() {
 }
 
 void TableCompiler::dump() { M->dump(); }
-
-llvm::ConstantInt *TableCompiler::getInt(int N) { return B.getInt32(N); }

@@ -16,13 +16,10 @@ public:
   void dump();
 
 private:
-  inline llvm::ConstantInt *getInt(int N);
   llvm::Value *getCurChar(llvm::IRBuilder<> B);
-  void generateStateMatch(unsigned I);
   void genCharIndexFn();
   void genFinalTable();
   void genTransitionTable();
-  unsigned getCharIndex(char C);
   DFATable &D;
   llvm::LLVMContext *C;
   llvm::Module *M;
