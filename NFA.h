@@ -57,7 +57,7 @@ public:
   DFATable get();
 private:
   std::set<NFA *> genEClosure(NFA &N);
-  std::set<NFA *> genEClosure(std::set<NFA *> && N);
+  std::set<NFA *> genEClosure(std::set<NFA *> &&N);
   std::set<NFA *> delta(std::set<NFA *> Q, char C);
   bool hasFinal(std::set<NFA *> &N);
   unsigned getID(const std::set<NFA *> &N);
@@ -78,7 +78,7 @@ std::set<NFA *> DFAGenerator::genEClosure(NFA &N) {
   return States;
 }
 
-std::set<NFA *> DFAGenerator::genEClosure(std::set<NFA *> && N) {
+std::set<NFA *> DFAGenerator::genEClosure(std::set<NFA *> &&N) {
   std::set<NFA *> States;
   for (auto &NF : N) {
     auto tmp = genEClosure(*NF);
@@ -134,15 +134,14 @@ void DFAGenerator::gen() {
       std::set<NFA *> t = genEClosure(delta(q, C));
       bool hasFinalState = hasFinal(t);
 
-      if (hasFinalState || !t.empty()) {
-        unsigned tID = getID(t);
-        if (hasFinal(t))
-          tID |= DFATable::Final;
-        D.set(getID(q), C, tID);
-        if (!Q.count(getID(t))) {
-          Q.insert(getID(t));
-          WorkList.push(t);
-        }
+      unsigned tID = getID(t);
+      if (hasFinalState)
+        tID |= DFATable::Final;
+
+      D.set(getID(q), C, tID);
+      if (!Q.count(getID(t))) {
+        Q.insert(getID(t));
+        WorkList.push(t);
       }
     }
   }

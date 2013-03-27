@@ -59,27 +59,24 @@ void TableCompiler::genTransitionTable() {
     OuterElts.push_back(InnerInit);
   }
   llvm::Constant *OuterInit = llvm::ConstantArray::get(OuterAT, OuterElts);
-  Table = new llvm::GlobalVariable(*M, OuterAT, true,
-                                   llvm::GlobalVariable::InternalLinkage,
-                                   OuterInit, "transitiontable");
+  Table = new llvm::GlobalVariable(
+      *M, OuterAT, true, llvm::GlobalVariable::InternalLinkage, OuterInit,
+      "transitiontable");
 }
 
 void TableCompiler::genFinalTable() {
   llvm::ArrayType *AT = llvm::ArrayType::get(B.getInt32Ty(), D.States.size());
   std::vector<llvm::Constant *> Finals;
-  Finals.reserve(D.States.size());
+  Finals.resize(D.States.size(), B.getInt32(0));
   for (auto &Row : D.States) {
-    bool isFinal = false;
     for (auto &Cell : Row) {
       if ((DFATable::Final & Cell.second) != 0)
-        isFinal = true;
+        Finals[Cell.second ^ DFATable::Final] = B.getInt32(1);
     }
-    Finals.push_back(B.getInt32(isFinal));
   }
   llvm::Constant *Init = llvm::ConstantArray::get(AT, Finals);
-  Init->dump();
   FinalTable = new llvm::GlobalVariable(
-      *M, AT, true, llvm::GlobalVariable::InternalLinkage, Init, "FinalTable");
+      *M, AT, true, llvm::GlobalVariable::InternalLinkage, Init, "finaltable");
 }
 
 void TableCompiler::gen() {
