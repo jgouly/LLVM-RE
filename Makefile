@@ -1,5 +1,5 @@
 CXX=clang++
-LLVMCONFIG=/home/jey/code/llvm/build-debug-ninja/bin/llvm-config
+LLVMCONFIG=~/Source/Foreign/llvm/build-debug-ninja/bin/llvm-config
 CXXFLAGS=-std=c++11 -g
 
 all: Driver.o TableCompiler.o

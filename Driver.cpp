@@ -1,4 +1,3 @@
-//#include "Compiler.h"
 #include "TableCompiler.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
 #include "llvm/ExecutionEngine/MCJIT.h"
@@ -23,12 +22,11 @@ int match(MatchFn MFn, std::string Str) {
 
 int main(int argc, char **) {
   // regex = /ab/
-  //DFATable D { { { {'b', 1} }, { {'b', 2} }, { {'c', 3}, {'q', 3} } } };
-  //   DFATable D { { { {'a', 1} },
-  //		               { {'b', 1}, {'c', 2} },
-  //									 { {'c', 2 | DFATable::Final}, {'d', 3} },
-  //                   { {'f', 4} } } };
-  DFATable D { { { {'b', 1} }, { {'b', 2} }, { {'c', 3}, {'q', 3} } } };
+  // DFATable D { { { {'b', 1} }, { {'b', 2} }, { {'c', 3}, {'q', 3} } } };
+  DFATable D{{{{'a', 1}},
+              {{'b', 1}, {'c', 2}},
+              {{'c', 2 | DFATable::Final}, {'d', 3}},
+              {{'f', 4}}}};
 
   TableCompiler C(D);
   C.gen();
@@ -36,9 +34,10 @@ int main(int argc, char **) {
   llvm::InitializeNativeTarget();
   llvm::InitializeNativeTargetAsmPrinter();
   std::string ErrStr;
-  llvm::ExecutionEngine *EE =
-      llvm::EngineBuilder(C.getModule()).setErrorStr(&ErrStr).setUseMCJIT(true)
-      .setJITMemoryManager(new llvm::SectionMemoryManager()).create();
+  llvm::ExecutionEngine *EE = llvm::EngineBuilder(C.getModule())
+                                  .setErrorStr(&ErrStr)
+                                  .setUseMCJIT(true)
+                                  .create();
   if (!EE) {
     fprintf(stderr, "Could not create ExecutionEngine: %s\n", ErrStr.c_str());
     return 1;
@@ -46,9 +45,9 @@ int main(int argc, char **) {
   EE->finalizeObject();
   void *FPtr = EE->getPointerToFunction(C.getMatchFn());
 
-  int(*match_ab)(const char *) = (int(*)(const char *))(intptr_t) FPtr;
+  int (*match_ab)(const char *) = (int (*)(const char *))(intptr_t)FPtr;
   if (argc > 1) {
-    int m = match(match_ab, "123abcdf");
+    int m = match(match_ab, "acc");
     if (m != -1) {
       std::cout << "MATCH at " << m;
     }

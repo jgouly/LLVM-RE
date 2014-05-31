@@ -1,7 +1,7 @@
 #include "TableCompiler.h"
-#include <llvm/Analysis/Verifier.h>
 #include <llvm/IR/Type.h>
 #include <llvm/IR/DerivedTypes.h>
+#include <llvm/IR/Verifier.h>
 
 static llvm::Function *generateMatchFunction(llvm::Module *M) {
   llvm::Type *T[] = { llvm::PointerType::getUnqual(
