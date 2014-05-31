@@ -45,9 +45,9 @@ int main(int argc, char **) {
   EE->finalizeObject();
   void *FPtr = EE->getPointerToFunction(C.getMatchFn());
 
-  int (*match_ab)(const char *) = (int (*)(const char *))(intptr_t)FPtr;
+  int (*match_ab)(const char *) = (MatchFn) FPtr;
   if (argc > 1) {
-    int m = match(match_ab, "acc");
+    int m = match(match_ab, "abcc");
     if (m != -1) {
       std::cout << "MATCH at " << m;
     }
