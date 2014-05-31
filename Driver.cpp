@@ -43,7 +43,7 @@ int main(int argc, char **) {
     return 1;
   }
   EE->finalizeObject();
-  void *FPtr = EE->getPointerToFunction(C.getMatchFn());
+  uint64_t FPtr = EE->getFunctionAddress(C.getMatchFn()->getName());
 
   int (*match_ab)(const char *) = (MatchFn) FPtr;
   if (argc > 1) {
